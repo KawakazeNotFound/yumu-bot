@@ -65,6 +65,13 @@ class OsuApiBaseService(
     final val redirectUrl: String
     final val oauthID: Int
     private val oauthToken: String
+    private val webUrl: String
+    private val assetsUrl: String
+    private val avatarUrl: String
+    private val previewUrl: String
+    private val mapRankTimesUrl: String
+    private val duelRatingUrl: String
+    private val bindingApiUrl: String
 
     init {
         var callbackUrl = osuConfig.callbackUrl
@@ -74,6 +81,39 @@ class OsuApiBaseService(
         redirectUrl = callbackUrl
         oauthID = osuConfig.id
         oauthToken = osuConfig.token
+        webUrl = osuConfig.webUrl.trimEnd('/')
+        assetsUrl = osuConfig.assetsUrl.trimEnd('/')
+        avatarUrl = osuConfig.avatarUrl.trimEnd('/')
+        previewUrl = osuConfig.previewUrl.trimEnd('/')
+        mapRankTimesUrl = osuConfig.mapRankTimesUrl.trimEnd('/')
+        duelRatingUrl = osuConfig.duelRatingUrl.trimEnd('/')
+        bindingApiUrl = osuConfig.bindingApiUrl.trimEnd('/')
+    }
+
+    fun webEndpoint(path: String): String = "$webUrl/${path.trimStart('/')}"
+
+    fun assetsEndpoint(path: String): String = "$assetsUrl/${path.trimStart('/')}"
+
+    fun avatarEndpoint(path: String): String = "$avatarUrl/${path.trimStart('/')}"
+
+    fun previewEndpoint(path: String): String = "$previewUrl/${path.trimStart('/')}"
+
+    fun mapRankTimesEndpoint(path: String): String = "$mapRankTimesUrl/${path.trimStart('/')}"
+
+    fun duelRatingEndpoint(path: String): String = "$duelRatingUrl/${path.trimStart('/')}"
+
+    fun bindingApiEndpoint(path: String): String = "$bindingApiUrl/${path.trimStart('/')}"
+
+    fun rewriteAssetsUrl(url: String): String = rewriteBase(url, "https://assets.ppy.sh", assetsUrl)
+
+    fun rewriteAvatarUrl(url: String): String = rewriteBase(url, "https://a.ppy.sh", avatarUrl)
+
+    private fun rewriteBase(url: String, officialBase: String, configuredBase: String): String {
+        return if (url.startsWith(officialBase)) {
+            configuredBase + url.removePrefix(officialBase)
+        } else {
+            url
+        }
     }
 
     // 核心调度器
@@ -169,7 +209,7 @@ class OsuApiBaseService(
 
         val result = this.osuApiRestClient
             .post()
-            .uri("https://osu.ppy.sh/oauth/token")
+            .uri(webEndpoint("oauth/token"))
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
             .body(body)
@@ -654,7 +694,7 @@ class OsuApiBaseService(
 
         val s = try {
             val jsonString = osuApiRestClient.post()
-                .uri("https://osu.ppy.sh/oauth/token")
+                .uri(webEndpoint("oauth/token"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(rawFormString)

@@ -48,7 +48,7 @@ import java.util.concurrent.CancellationException
             log.error("获取玩家 ${user.userID} 头像失败，尝试返回默认头像")
 
             request { client ->
-                client.get().uri("https://a.ppy.sh/").toBody<ByteArray>()
+                client.get().uri(base.avatarEndpoint("")).toBody<ByteArray>()
             }
         }
     }
@@ -57,7 +57,7 @@ import java.util.concurrent.CancellationException
         return try {
             request { client ->
                 client.head()
-                    .uri("https://osu.ppy.sh/users/@{name}", name) // 注意：URI 变量通常不带 @
+                    .uri(base.webEndpoint("users/@{name}"), name) // 注意：URI 变量通常不带 @
                     .headers(base::insertHeader)
                     .retrieve()
                     .onStatus({ it.value() == 404 }) { _, _ ->
@@ -75,7 +75,7 @@ import java.util.concurrent.CancellationException
     }
 
     override fun getOauthUrl(state: String, full: Boolean): String {
-        return UriComponentsBuilder.fromUriString("https://osu.ppy.sh/oauth/authorize")
+        return UriComponentsBuilder.fromUriString(base.webEndpoint("oauth/authorize"))
             .queryParam("client_id", base.oauthID).queryParam("redirect_uri", base.redirectUrl)
             .queryParam("response_type", "code").queryParam(
                 "scope", if (full) "chat.read chat.write chat.write_manage forum.write friends.read identify public"
@@ -390,7 +390,7 @@ import java.util.concurrent.CancellationException
     override fun getEliteronixDuelRating(userID: Long): ETXDuelRating {
         val response = request { client ->
             client.get()
-                .uri("https://www.eliteronix.de/elitebotix/api/player-duelrating?u=${userID}")
+                .uri(base.duelRatingEndpoint("player-duelrating?u=${userID}"))
                 .headers { headers ->
                 base.insertHeader(headers)
             }.toBody<String>()
@@ -451,14 +451,14 @@ import java.util.concurrent.CancellationException
     @Deprecated("please use getTeam()")
     override fun getTeamInfo(id: Int): TeamInfo? {
         val html = base.osuApiRestClient
-            .get().uri("https://osu.ppy.sh/teams/{id}", id).toBody<String>()
+            .get().uri(base.webEndpoint("teams/{id}"), id).toBody<String>()
 
         return parseTeamInfo(id, html)
     }
 
     override fun getTopPlays(page: Int, mode: OsuMode): TopPlays? {
         val html = base.osuApiRestClient
-            .get().uri("https://osu.ppy.sh/rankings/top-plays/${mode.shortName}?page=${page}#scores").toBody<String>()
+            .get().uri(base.webEndpoint("rankings/top-plays/${mode.shortName}?page=${page}#scores")).toBody<String>()
 
         return parseTopPlays(html)
     }
@@ -467,7 +467,7 @@ import java.util.concurrent.CancellationException
 
         // 笑死，这里 Accept 填 json 居然真给 json 了
         val resp = base.osuApiRestClient
-            .get().uri("https://osu.ppy.sh/users/$userID/ranked-play")
+            .get().uri(base.webEndpoint("users/$userID/ranked-play"))
             .toBody<Quickplay>()
 
         return resp
@@ -500,12 +500,9 @@ import java.util.concurrent.CancellationException
                 if (Files.isRegularFile(path.resolve(hex))) {
                     return@Runnable
                 } else {
-                    val replacePath = url.replace("https://a.ppy.sh/", "")
-
                     val image = try {
-                        base.osuApiRestClient.get().uri {
-                                it.scheme("https").host("a.ppy.sh").replacePath(replacePath).build()
-                        }.headers(base::insertHeader).toBody<ByteArray>()
+                        base.osuApiRestClient.get().uri(base.rewriteAvatarUrl(url))
+                            .headers(base::insertHeader).toBody<ByteArray>()
                     } catch (e: Exception) {
                         log.error("异步下载头像：任务失败\n", e)
                         return@Runnable
@@ -551,12 +548,9 @@ import java.util.concurrent.CancellationException
                 if (Files.isRegularFile(path.resolve(hex))) {
                     return@Runnable
                 } else {
-                    val replacePath = url.replace("https://assets.ppy.sh/", "")
-
                     val image = try {
-                        base.osuApiRestClient.get().uri {
-                                it.scheme("https").host("assets.ppy.sh").replacePath(replacePath).build()
-                        }.headers(base::insertHeader).toBody<ByteArray>()
+                        base.osuApiRestClient.get().uri(base.rewriteAssetsUrl(url))
+                            .headers(base::insertHeader).toBody<ByteArray>()
                     } catch (e: Exception) {
                         log.error("异步下载背景：任务失败\n", e)
                         return@Runnable

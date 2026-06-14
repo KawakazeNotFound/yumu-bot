@@ -7,10 +7,11 @@ yumu:
   public-domain: ${yumu.private-domain}
   private-device: [ ]
   diving-fish:
-    url: ~
+    url: "https://www.diving-fish.com"
     token: ~
   lxns:
-    url: ~
+    url: "https://maimai.lxns.net"
+    asset-url: "https://assets2.lxns.net/"
     token: ~
   mirror: # 谱面镜像站的设定
     url: ~
@@ -43,6 +44,15 @@ yumu:
     # 也是图片素材
     exportFile: ${yumu.file.bgdir}ExportFileV3/
   osu: # osu 相关的配置
+    # 所有地址均可替换为反向代理；建议保留末尾的 /
+    url: "https://osu.ppy.sh/api/v2/"
+    web-url: "https://osu.ppy.sh/"
+    assets-url: "https://assets.ppy.sh/"
+    avatar-url: "https://a.ppy.sh/"
+    preview-url: "https://b.ppy.sh/preview/"
+    map-rank-times-url: "https://mapranktimes.vercel.app/api/"
+    duel-rating-url: "https://www.eliteronix.de/elitebotix/api/"
+    binding-api-url: "https://api.bleatingsheep.org/api/"
     # api 回调接口端点, 注意: 注册 oauth 应用时填写下面访问服务器的 url 而不是接口端点
     callbackPath: /oauth
     #oauth应用的id与token

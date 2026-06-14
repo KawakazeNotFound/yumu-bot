@@ -70,7 +70,7 @@ class BeatmapApiImpl(
     private val osuDir: Path = Path.of(fileConfig.osuFilePath)
 
     override fun getVoice(beatmapsetID: Number): ByteArray? {
-        val url = "https://b.ppy.sh/preview/${beatmapsetID}.mp3"
+        val url = base.previewEndpoint("${beatmapsetID}.mp3")
 
         return runCatching {
             base.osuApiRestClient.get().uri(url).toBody<ByteArray>()
@@ -103,7 +103,7 @@ class BeatmapApiImpl(
             }
         }
 
-        val url = covers.getString(type)
+        val url = base.rewriteAssetsUrl(covers.getString(type))
 
         if (url.isBlank()) {
             log.info("获取谱面图片：谱面封面类不完整")
@@ -192,7 +192,7 @@ class BeatmapApiImpl(
         try {
             return request { client ->
                 client.get()
-                    .uri("https://osu.ppy.sh/osu/{bid}", bid)
+                    .uri(base.webEndpoint("osu/{bid}"), bid)
                     .toBody<String>()
             }
         } catch (e: HttpClientErrorException) {
@@ -1295,7 +1295,7 @@ class BeatmapApiImpl(
 
     private fun getBeatmapsetWithRankedTimeLibrary(): List<BeatmapsetWithRankTime> {
         val jsonString = proxyClient.get()
-            .uri("https://mapranktimes.vercel.app/api/beatmapsets")
+            .uri(base.mapRankTimesEndpoint("beatmapsets"))
             .toBody<String>()
         val json = JacksonUtil.toNode(jsonString)
         return JacksonUtil.parseObjectList(json, BeatmapsetWithRankTime::class.java)
@@ -1304,7 +1304,7 @@ class BeatmapApiImpl(
 
     fun getBeatmapSetWithRankedTime(beatmapsetID: Long): BeatmapsetWithRankTime {
         return proxyClient.get()
-            .uri("https://mapranktimes.vercel.app/api/beatmapsets/{sid}", beatmapsetID)
+            .uri(base.mapRankTimesEndpoint("beatmapsets/{sid}"), beatmapsetID)
             .toBody<BeatmapsetWithRankTime>()
     }
 

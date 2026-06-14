@@ -2,6 +2,7 @@ package com.now.nowbot.service.divingFishApiService.impl
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.now.nowbot.dao.MaiDao
+import com.now.nowbot.config.LxnsConfig
 import com.now.nowbot.model.maimai.ChuAlias
 import com.now.nowbot.model.maimai.ChuBestScore
 import com.now.nowbot.model.maimai.ChuScore
@@ -25,9 +26,12 @@ import kotlin.text.Charsets.UTF_8
 @Service
 class ChunithmApiImpl(
     private val base: DivingFishBaseService,
-    private val maiDao: MaiDao
+    private val maiDao: MaiDao,
+    lxnsConfig: LxnsConfig,
 ) : ChunithmApiService {
     private val path = base.chunithmPath!!
+    private val lxnsUrl = lxnsConfig.url.trimEnd('/')
+    private val lxnsAssetUrl = lxnsConfig.assetUrl.trimEnd('/')
 
     private data class ChunithmBestScoreQQBody(val qq: Long, val b50: Boolean)
 
@@ -99,7 +103,7 @@ class ChunithmApiImpl(
         val song: String = songID.toString()
         val cover = try {
             request { client ->
-                client.get().uri("https://assets2.lxns.net/chunithm/jacket/${song}.png")
+                client.get().uri("$lxnsAssetUrl/chunithm/jacket/${song}.png")
                     .toBody<ByteArray>()
             }
         } catch (_: Exception) {
@@ -255,7 +259,7 @@ class ChunithmApiImpl(
 
     private val chunithmAliasLibraryFromAPI: String
         get() = request { client ->
-            client.get().uri("https://maimai.lxns.net/api/v0/chunithm/alias/list")
+            client.get().uri("$lxnsUrl/api/v0/chunithm/alias/list")
                 .toBody<String>()
         }
 
