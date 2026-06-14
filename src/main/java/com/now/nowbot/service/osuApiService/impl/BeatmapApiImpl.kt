@@ -69,6 +69,24 @@ class BeatmapApiImpl(
 
     private val osuDir: Path = Path.of(fileConfig.osuFilePath)
 
+    init {
+        runCatching {
+            Files.createDirectories(osuDir)
+
+            if (!Files.isWritable(osuDir)) {
+                log.warn("谱面实现：谱面缓存目录不可写：{}", osuDir.toAbsolutePath())
+            }
+        }.onFailure { error ->
+            log.warn(
+                "谱面实现：初始化谱面缓存目录失败，目标目录：{}，错误类型：{}，原因：{}",
+                osuDir.toAbsolutePath(),
+                error.javaClass.name,
+                error.message,
+                error
+            )
+        }
+    }
+
     override fun getVoice(beatmapsetID: Number): ByteArray? {
         val url = base.previewEndpoint("${beatmapsetID}.mp3")
 
@@ -282,8 +300,15 @@ class BeatmapApiImpl(
                     runCatching {
                         Files.writeString(path, fileString)
                         downloaded.add(id)
-                    }.onFailure {
-                        log.warn("谱面实现：写谱面 $id 时失败。")
+                    }.onFailure { error ->
+                        log.warn(
+                            "谱面实现：写谱面 {} 时失败，目标文件：{}，错误类型：{}，原因：{}",
+                            id,
+                            path.toAbsolutePath(),
+                            error.javaClass.name,
+                            error.message,
+                            error
+                        )
                     }
                 } else {
                     log.warn("谱面实现：谱面 $id 下载返回内容为空")
