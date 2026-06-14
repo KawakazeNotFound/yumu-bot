@@ -11,6 +11,27 @@ class OsuConfig {
      */
     var url: String = "https://osu.ppy.sh/api/v2/"
 
+    /** osu! 网站、OAuth 和 .osu 文件的基础地址。 */
+    var webUrl: String = "https://osu.ppy.sh/"
+
+    /** 谱面封面、用户背景、队伍素材等静态资源的基础地址。 */
+    var assetsUrl: String = "https://assets.ppy.sh/"
+
+    /** 玩家头像的基础地址。 */
+    var avatarUrl: String = "https://a.ppy.sh/"
+
+    /** 谱面试听音频的基础地址。 */
+    var previewUrl: String = "https://b.ppy.sh/preview/"
+
+    /** 谱面上架时间辅助 API。 */
+    var mapRankTimesUrl: String = "https://mapranktimes.vercel.app/api/"
+
+    /** Eliteronix duel rating API。 */
+    var duelRatingUrl: String = "https://www.eliteronix.de/elitebotix/api/"
+
+    /** QQ 到 osu! 账号的第三方绑定查询 API。 */
+    var bindingApiUrl: String = "https://api.bleatingsheep.org/api/"
+
     /**
      * 回调链接, 需要与 osu oauth 应用的callback url 完全一致
      * 默认不需要配置, 自动构造 publicDomain+callBackUrl

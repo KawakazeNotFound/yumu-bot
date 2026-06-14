@@ -2,6 +2,7 @@ package com.now.nowbot.service.divingFishApiService.impl
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.now.nowbot.dao.MaiDao
+import com.now.nowbot.config.LxnsConfig
 import com.now.nowbot.model.enums.MaiVersion
 import com.now.nowbot.model.enums.MaiVersion.Companion.getNameList
 import com.now.nowbot.model.maimai.*
@@ -27,8 +28,10 @@ import kotlin.text.Charsets.UTF_8
 @Service class MaimaiApiImpl(
     private val base: DivingFishBaseService,
     private val maiDao: MaiDao,
+    lxnsConfig: LxnsConfig,
 ) : MaimaiApiService {
     private val path = base.maimaiPath!!
+    private val lxnsUrl = lxnsConfig.url.trimEnd('/')
 
     private data class MaimaiBestQQRequestBody(val qq: Long, val b50: Boolean)
 
@@ -469,7 +472,7 @@ import kotlin.text.Charsets.UTF_8
 
     private val maimaiAliasLibraryFromAPI: String
         get() = request { client ->
-            client.get().uri("https://maimai.lxns.net/api/v0/maimai/alias/list")
+            client.get().uri("$lxnsUrl/api/v0/maimai/alias/list")
                 .toBody<String>()
         }
 

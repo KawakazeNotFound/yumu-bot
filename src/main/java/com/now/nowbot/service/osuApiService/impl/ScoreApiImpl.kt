@@ -70,7 +70,7 @@ class ScoreApiImpl(
             }
         }
 
-        val url = score.beatmapset.covers.getString(type)
+        val url = base.rewriteAssetsUrl(score.beatmapset.covers.getString(type))
 
         if (url.isBlank()) {
             log.info("获取谱面图片：谱面封面类不完整")
@@ -440,18 +440,10 @@ class ScoreApiImpl(
                 if (Files.isRegularFile(path.resolve(hex))) {
                     return@Runnable
                 } else {
-                    val split = url.split('?')
-                    val query = split.lastOrNull()?.toLongOrNull() ?: 0L
-                    val replacePath = split.first().replace("https://assets.ppy.sh/", "")
-
                     val image = try {
                         request { client ->
                             client.get()
-                                .uri {
-                                    it.scheme("https").host("assets.ppy.sh").replacePath(replacePath)
-                                        .query(query.toString())
-                                        .build()
-                                }
+                                .uri(base.rewriteAssetsUrl(url))
                                 .headers(base::insertHeader)
                                 .toBody<ByteArray>()
                         }

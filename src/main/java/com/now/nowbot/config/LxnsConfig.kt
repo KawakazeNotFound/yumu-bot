@@ -12,6 +12,10 @@ class LxnsConfig {
      */
     var url: String = "https://maimai.lxns.net"
 
+    /** 完整素材基础地址，设置后优先于 assetHost。 */
+    var assetUrl: String = ""
+
+    /** 旧版配置兼容项。 */
     var assetHost: String = "assets2.lxns.net"
 
     /**

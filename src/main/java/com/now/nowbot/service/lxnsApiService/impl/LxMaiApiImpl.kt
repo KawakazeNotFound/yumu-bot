@@ -29,11 +29,7 @@ class LxMaiApiImpl(
     override fun getAudio(songID: Int): ByteArray {
         return request { client ->
             client.get()
-                .uri {
-                    it.host(base.assetHost)
-                        .path("maimai/music/${songID % 10000}.mp3")
-                        .build()
-                }
+                .uri("${base.assetUrl}/maimai/music/${songID % 10000}.mp3")
                 .headers(base::insertDeveloperHeader)
                 .toBody<ByteArray>()
         }

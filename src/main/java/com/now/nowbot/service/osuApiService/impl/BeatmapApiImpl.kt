@@ -69,8 +69,26 @@ class BeatmapApiImpl(
 
     private val osuDir: Path = Path.of(fileConfig.osuFilePath)
 
+    init {
+        runCatching {
+            Files.createDirectories(osuDir)
+
+            if (!Files.isWritable(osuDir)) {
+                log.warn("谱面实现：谱面缓存目录不可写：{}", osuDir.toAbsolutePath())
+            }
+        }.onFailure { error ->
+            log.warn(
+                "谱面实现：初始化谱面缓存目录失败，目标目录：{}，错误类型：{}，原因：{}",
+                osuDir.toAbsolutePath(),
+                error.javaClass.name,
+                error.message,
+                error
+            )
+        }
+    }
+
     override fun getVoice(beatmapsetID: Number): ByteArray? {
-        val url = "https://b.ppy.sh/preview/${beatmapsetID}.mp3"
+        val url = base.previewEndpoint("${beatmapsetID}.mp3")
 
         return runCatching {
             base.osuApiRestClient.get().uri(url).toBody<ByteArray>()
@@ -103,7 +121,7 @@ class BeatmapApiImpl(
             }
         }
 
-        val url = covers.getString(type)
+        val url = base.rewriteAssetsUrl(covers.getString(type))
 
         if (url.isBlank()) {
             log.info("获取谱面图片：谱面封面类不完整")
@@ -192,7 +210,7 @@ class BeatmapApiImpl(
         try {
             return request { client ->
                 client.get()
-                    .uri("https://osu.ppy.sh/osu/{bid}", bid)
+                    .uri(base.webEndpoint("osu/{bid}"), bid)
                     .toBody<String>()
             }
         } catch (e: HttpClientErrorException) {
@@ -282,8 +300,15 @@ class BeatmapApiImpl(
                     runCatching {
                         Files.writeString(path, fileString)
                         downloaded.add(id)
-                    }.onFailure {
-                        log.warn("谱面实现：写谱面 $id 时失败。")
+                    }.onFailure { error ->
+                        log.warn(
+                            "谱面实现：写谱面 {} 时失败，目标文件：{}，错误类型：{}，原因：{}",
+                            id,
+                            path.toAbsolutePath(),
+                            error.javaClass.name,
+                            error.message,
+                            error
+                        )
                     }
                 } else {
                     log.warn("谱面实现：谱面 $id 下载返回内容为空")
@@ -1295,7 +1320,7 @@ class BeatmapApiImpl(
 
     private fun getBeatmapsetWithRankedTimeLibrary(): List<BeatmapsetWithRankTime> {
         val jsonString = proxyClient.get()
-            .uri("https://mapranktimes.vercel.app/api/beatmapsets")
+            .uri(base.mapRankTimesEndpoint("beatmapsets"))
             .toBody<String>()
         val json = JacksonUtil.toNode(jsonString)
         return JacksonUtil.parseObjectList(json, BeatmapsetWithRankTime::class.java)
@@ -1304,7 +1329,7 @@ class BeatmapApiImpl(
 
     fun getBeatmapSetWithRankedTime(beatmapsetID: Long): BeatmapsetWithRankTime {
         return proxyClient.get()
-            .uri("https://mapranktimes.vercel.app/api/beatmapsets/{sid}", beatmapsetID)
+            .uri(base.mapRankTimesEndpoint("beatmapsets/{sid}"), beatmapsetID)
             .toBody<BeatmapsetWithRankTime>()
     }
 

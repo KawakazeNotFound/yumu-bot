@@ -4,6 +4,7 @@ import com.mikuac.shiro.core.BotContainer
 import com.mikuac.shiro.dto.action.response.GroupMemberInfoResp
 import com.now.nowbot.config.FileConfig
 import com.now.nowbot.config.NewbieConfig
+import com.now.nowbot.config.OsuConfig
 import com.now.nowbot.entity.ServiceCallStatistic
 import com.now.nowbot.model.osu.MicroUser
 import com.now.nowbot.qq.contact.Group
@@ -35,9 +36,12 @@ class GroupStatisticsService(
     private val bots: BotContainer,
     private val userApiService: OsuUserApiService,
     private val newbieConfig: NewbieConfig,
+    osuConfig: OsuConfig,
     fileConfig: FileConfig,
 ) : MessageService<Long> {
     private val cachePath: Path = Path.of(fileConfig.root, "StatisticalOverPPService.json")
+    private val bindingApiUrl = osuConfig.bindingApiUrl.trimEnd('/')
+    private val osuWebUrl = osuConfig.webUrl.trimEnd('/')
 
     private fun getOsuId(qq: Long): Long? {
         if (UserCache.containsKey(qq)) {
@@ -45,7 +49,7 @@ class GroupStatisticsService(
         }
         val json = try {
             osuApiRestClient.get()
-                .uri(GET_BINDING, qq)
+                .uri("$bindingApiUrl/Binding/{qq}", qq)
                 .toBody<JsonNode>()
         } catch (_: Exception) {
             null
@@ -64,7 +68,7 @@ class GroupStatisticsService(
     fun getOsuBp1(osuId: Long): Float {
         val json = try {
             osuApiRestClient.get()
-                .uri(GET_BP_URL, osuId)
+                .uri("$osuWebUrl/users/{osuId}/scores/best?mode=osu&limit=1", osuId)
                 .toBody<JsonNode>()
         } catch (_: Exception) {
             null
@@ -231,9 +235,6 @@ class GroupStatisticsService(
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(GroupStatisticsService::class.java)
-        private const val GET_BINDING = "https://api.bleatingsheep.org/api/Binding/{qq}"
-        private const val GET_BP_URL: String = "https://osu.ppy.sh/users/{osuId}/scores/best?mode=osu&limit=1"
-
         private val UserCache: MutableMap<Long, Long?> = HashMap()
 
         private var lock = 0

@@ -21,7 +21,9 @@ class LxnsBaseService(
     // /home/spring/work/img/ExportFileV3/Chunithm
     final val chunithmPath: Path? = lxnsConfig.chunithm
 
-    final val assetHost: String = lxnsConfig.assetHost
+    final val assetUrl: String = (
+        lxnsConfig.assetUrl.ifBlank { "https://${lxnsConfig.assetHost}" }
+    ).trimEnd('/')
 
     // 这里写 token 相关的
     init {

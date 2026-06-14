@@ -171,9 +171,20 @@ spring:
 
 | 配置项 | 说明 |
 |--------|------|
+| `url` | osu! API v2 基础地址，可设置为反向代理的 `/api/v2/` 地址 |
+| `web-url` | osu! 网站及 OAuth 基础地址 |
+| `assets-url` | osu! 静态素材基础地址 |
+| `avatar-url` | osu! 玩家头像基础地址 |
+| `preview-url` | osu! 谱面试听基础地址 |
+| `map-rank-times-url` | 谱面上架时间辅助 API 基础地址 |
+| `duel-rating-url` | Eliteronix duel rating API 基础地址 |
+| `binding-api-url` | QQ 与 osu! 账号绑定查询 API 基础地址 |
 | `id` | osu! OAuth 应用 ID（在 https://osu.ppy.sh/home/account/edit 注册获取） |
 | `token` | osu! OAuth 应用 Token |
 | `callbackPath` | OAuth 回调接口端点（默认 `/oauth`） |
+
+这些地址可以分别指向 Cloudflare Workers 等固定上游反向代理。代理 OAuth 时不要记录
+`Authorization`、`client_secret`、访问令牌或刷新令牌。
 
 ### 服务端口 (`server.port`)
 

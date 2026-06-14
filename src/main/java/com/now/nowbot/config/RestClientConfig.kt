@@ -33,7 +33,7 @@ class RestClientConfig {
 
     @Bean("osuApiRestClient")
     @Qualifier("osuApiRestClient")
-    fun osuApiRestClient(config: NowbotConfig): RestClient {
+    fun osuApiRestClient(config: NowbotConfig, osuConfig: OsuConfig): RestClient {
         val hasProxy = config.proxyHost != null && config.proxyPort != 0
         val connectionManager = PoolingHttpClientConnectionManager()
 
@@ -68,7 +68,7 @@ class RestClientConfig {
 
         return RestClient.builder()
             .requestFactory(requestFactory)
-            .baseUrl("https://osu.ppy.sh/api/v2/")
+            .baseUrl(osuConfig.url)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .build()
@@ -86,7 +86,7 @@ class RestClientConfig {
             .build()
 
     @Bean("noRetryRestClient")
-    fun noRetryRestClient(config: NowbotConfig): RestClient {
+    fun noRetryRestClient(config: NowbotConfig, osuConfig: OsuConfig): RestClient {
         val hasProxy = config.proxyHost != null
         val connectionManager = PoolingHttpClientConnectionManager()
 
@@ -121,7 +121,7 @@ class RestClientConfig {
 
         return noRetryClientBuilder(httpClient)
             .requestFactory(requestFactory)
-            .baseUrl("https://osu.ppy.sh/api/v2/")
+            .baseUrl(osuConfig.url)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .build()

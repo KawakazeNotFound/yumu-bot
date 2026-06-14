@@ -2,6 +2,7 @@ package com.now.nowbot.service.messageServiceImpl
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.now.nowbot.dao.BindDao
+import com.now.nowbot.config.OsuConfig
 import com.now.nowbot.entity.ServiceCallStatistic
 import com.now.nowbot.model.enums.OsuMode
 import com.now.nowbot.model.osu.*
@@ -38,11 +39,13 @@ import java.util.regex.Matcher
     private val userApiService: OsuUserApiService,
     private val imageService: ImageService,
     private val calculateApiService: OsuCalculateApiService,
-    private val bindDao: BindDao
+    private val bindDao: BindDao,
+    osuConfig: OsuConfig,
 ) : MessageService<BAParam>, TencentMessageService<BAParam> {
+    private val avatarUrl = osuConfig.avatarUrl.trimEnd('/')
 
     data class BAParam(val user: OsuUser, val bests: List<LazerScore>, val isMyself: Boolean, val mappers: List<MicroUser>, val version: Int) {
-        fun toMap(version: Int = this.version): Map<String, Any> {
+        fun toMap(version: Int = this.version, avatarUrl: String = "https://a.ppy.sh"): Map<String, Any> {
             if (bests.size <= 5) {
                 throw NoSuchElementException.PlayerBestScore(user.username, user.currentOsuMode)
             }
@@ -144,7 +147,7 @@ import java.util.regex.Matcher
 
             val mappers =  mapperMap.map { (ms, ss) ->
                 Mapper(
-                    avatarUrl = "https://a.ppy.sh/${ms.userID}",
+                    avatarUrl = "$avatarUrl/${ms.userID}",
                     username = ms.username,
                     mapCount = ss.size,
                     ppCount = ss.sum(),
@@ -324,7 +327,7 @@ import java.util.regex.Matcher
                 else -> "J2"
             }
 
-            MessageChain(imageService.getPanel(this.toMap(), name))
+            MessageChain(imageService.getPanel(this.toMap(avatarUrl = avatarUrl), name))
         } catch (e0: TipsRuntimeException) {
             throw e0
         } catch (e: Exception) {
